@@ -1,25 +1,26 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Line } from 'react-chartjs-2';
-import { 
-  Chart as ChartJS, 
-  CategoryScale, 
-  LinearScale, 
-  PointElement, 
-  LineElement, 
-  Title, 
-  Tooltip, 
-  Legend,
-  Filler
-} from 'chart.js';
-import { format, subDays, startOfWeek, endOfWeek } from 'date-fns';
 import { Activity, Calendar, TrendingUp, Timer, Heart } from 'lucide-react';
+import { useUser } from "@clerk/nextjs";
+import { createClient } from '@supabase/supabase-js';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+} from 'chart.js';
 
+// Register ChartJS components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -31,144 +32,165 @@ ChartJS.register(
   Filler
 );
 
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
 export default function AnalysisPage() {
-    const { user } = useUser();
-    const [dateRange, setDateRange] = useState('week');
-    const [activityType, setActivityType] = useState('all');
-    const [isLoading, setIsLoading] = useState(true);
-    const [data, setData] = useState<any>(null);
-    const [error, setError] = useState<string | null>(null);
-  
-    useEffect(() => {
+  const { user } = useUser();
+  const [dateRange, setDateRange] = useState('week');
+  const [activityType, setActivityType] = useState('all');
+  const [isLoading, setIsLoading] = useState(true);
+  const [data, setData] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isStravaConnected, setIsStravaConnected] = useState(false);
+
+  useEffect(() => {
+    checkStravaConnection();
+  }, [user]);
+
+  useEffect(() => {
+    if (isStravaConnected) {
       fetchActivities();
-    }, [dateRange, activityType]);
-  
-    const fetchActivities = async () => {
-      setIsLoading(true);
+    }
+  }, [dateRange, activityType, isStravaConnected]);
+
+  const checkStravaConnection = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('strava_tokens')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) throw error;
+      setIsStravaConnected(!!data);
+    } catch (err) {
+      console.error('Error checking Strava connection:', err);
+      setIsStravaConnected(false);
+    }
+  };
+
+  const connectStrava = useCallback(async (source: 'onboarding' | 'dashboard/analysis' = 'dashboard/analysis') => {
+    try {
       setError(null);
-  
-      try {
-        const response = await fetch(
-          `/api/activities?dateRange=${dateRange}&activityType=${activityType}`
-        );
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch activities');
-        }
-  
-        const data = await response.json();
-        setData(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-      } finally {
-        setIsLoading(false);
+      const response = await fetch('/api/auth/strava/');
+      const { authUrl } = await response.json();
+      
+      // Store selected tracker before redirect
+     // localStorage.setItem('selectedTracker', 'strava');
+      
+      // Add source as state parameter
+      const url = new URL(authUrl);
+      url.searchParams.set('state', source);
+      window.location.href = url.toString();
+    } catch (error) {
+      console.error('Error initiating Strava connection:', error);
+      setError('Failed to connect to Strava');
+    }
+  }, []);
+
+  const fetchActivities = async () => {
+    if (!user || !isStravaConnected) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(
+        `/api/activities?dateRange=${dateRange}&activityType=${activityType}`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch activities');
       }
-    };
-  
-    const chartData = {
-      labels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-      datasets: [{
-        label: 'Distance (km)',
-        data: data?.chartData || Array(7).fill(0),
-        borderColor: '#FF7F5C',
-        backgroundColor: 'rgba(255, 127, 92, 0.1)',
-        fill: true,
-      }],
-    };
-  
-    const chartOptions = {
-      responsive: true,
-      plugins: {
-        legend: {
-          position: 'top' as const,
-        },
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-        },
-      },
-    };
-  
-    if (isLoading) {
-      return (
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF7F5C]"></div>
-          </div>
-        </div>
-      );
+
+      const data = await response.json();
+      setData(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setIsLoading(false);
     }
-  
-    if (error) {
-      return (
-        <div className="container mx-auto px-4 py-8">
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-center">
-                <h2 className="text-xl font-semibold text-red-500 mb-2">Error</h2>
-                <p className="text-gray-600">{error}</p>
-                <Button 
-                  onClick={fetchActivities} 
-                  className="mt-4 bg-[#FF7F5C] hover:bg-[#FF7F5C]/90"
-                >
-                  Try Again
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      );
-    }
-  
+  };
+
+  const chartData = {
+    labels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    datasets: [{
+      label: 'Distance (km)',
+      data: data?.chartData || Array(7).fill(0),
+      borderColor: '#FF7F5C',
+      backgroundColor: 'rgba(255, 127, 92, 0.1)',
+      fill: true,
+    }],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+      },
+    },
+  };
+
+ 
+  if (!isStravaConnected) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center">
+              <h2 className="text-xl font-semibold mb-4">Connect with Strava</h2>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                Connect your Strava account to view your training data and analytics.
+              </p>
+              <Button 
+                onClick={() => connectStrava('dashboard/analysis')}
+                className="bg-[#FC4C02] hover:bg-[#FC4C02]/90"
+              >
+                <Activity className="mr-2 h-4 w-4" />
+                Connect Strava
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center">
+              <h2 className="text-xl font-semibold text-red-500 mb-2">Error</h2>
+              <p className="text-gray-600 dark:text-gray-300">{error}</p>
+              <Button 
+                onClick={fetchActivities} 
+                className="mt-4 bg-[#FF7F5C] hover:bg-[#FF7F5C]/90"
+              >
+                Try Again
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[#FF7F5C] mb-4">Training Analysis</h1>
-        
-        {/* Connection Status */}
-        <div className="grid md:grid-cols-2 gap-4 mb-8">
-          <Card className={`border-2 ${isStravaConnected ? 'border-green-500' : 'border-gray-300'}`}>
-            <CardContent className="p-6">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="font-semibold mb-2">Strava Connection</h3>
-                  <p className="text-sm text-gray-600">
-                    {isStravaConnected ? 'Connected' : 'Not connected'}
-                  </p>
-                </div>
-                <Button 
-                  onClick={connectStrava}
-                  className={isStravaConnected ? 'bg-green-500' : 'bg-[#FF7F5C]'}
-                >
-                  {isStravaConnected ? 'Connected' : 'Connect Strava'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className={`border-2 ${isGarminConnected ? 'border-green-500' : 'border-gray-300'}`}>
-            <CardContent className="p-6">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="font-semibold mb-2">Garmin Connection</h3>
-                  <p className="text-sm text-gray-600">
-                    {isGarminConnected ? 'Connected' : 'Not connected'}
-                  </p>
-                </div>
-                <Button 
-                  onClick={connectGarmin}
-                  className={isGarminConnected ? 'bg-green-500' : 'bg-[#FF7F5C]'}
-                >
-                  {isGarminConnected ? 'Connected' : 'Connect Garmin'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Filters */}
+      {/* Filters */}
       <div className="flex gap-4 mb-8">
         <Select value={dateRange} onValueChange={setDateRange}>
           <SelectTrigger className="w-[180px]">
@@ -203,7 +225,7 @@ export default function AnalysisPage() {
                 <Activity className="h-6 w-6 text-[#FF7F5C]" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Total Distance</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Total Distance</p>
                 <p className="text-xl font-bold">
                   {((data?.stats?.totalDistance || 0) / 1000).toFixed(1)} km
                 </p>
@@ -219,7 +241,7 @@ export default function AnalysisPage() {
                 <Timer className="h-6 w-6 text-[#8B9FEF]" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Total Time</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Total Time</p>
                 <p className="text-xl font-bold">
                   {Math.floor((data?.stats?.totalTime || 0) / 3600)}h {Math.floor(((data?.stats?.totalTime || 0) % 3600) / 60)}m
                 </p>
@@ -235,7 +257,7 @@ export default function AnalysisPage() {
                 <TrendingUp className="h-6 w-6 text-[#FF7F5C]" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Elevation Gain</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Elevation Gain</p>
                 <p className="text-xl font-bold">{Math.round(data?.stats?.totalElevation || 0)}m</p>
               </div>
             </div>
@@ -249,7 +271,7 @@ export default function AnalysisPage() {
                 <Heart className="h-6 w-6 text-[#8B9FEF]" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Avg Heart Rate</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Avg Heart Rate</p>
                 <p className="text-xl font-bold">{data?.stats?.avgHeartRate || 0} bpm</p>
               </div>
             </div>
@@ -284,7 +306,7 @@ export default function AnalysisPage() {
                   </div>
                   <div>
                     <p className="font-medium">{activity.name}</p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
                       {(activity.distance / 1000).toFixed(1)}km • 
                       {Math.floor(activity.moving_time / 60)}min • 
                       {((activity.average_speed * 3.6) || 0).toFixed(1)}km/h

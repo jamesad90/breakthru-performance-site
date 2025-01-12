@@ -86,3 +86,8 @@
     @apply bg-background text-foreground;
   }
 }
+@layer components {
+  .border-border {
+    border: 2px solidrgb(0, 94, 255); /* Example custom border style */
+  }
+}

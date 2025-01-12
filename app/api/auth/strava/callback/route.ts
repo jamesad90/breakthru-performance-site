@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs';
+import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@supabase/supabase-js';
 
 const STRAVA_CLIENT_ID = process.env.STRAVA_CLIENT_ID;
@@ -7,14 +7,14 @@ const STRAVA_CLIENT_SECRET = process.env.STRAVA_CLIENT_SECRET;
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
 export async function GET(request: Request) {
-  const { userId } = auth();
+  const { userId } = await auth();
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
-
+  console.log("CODE", code);
   if (!code || !userId) {
     return NextResponse.redirect(`${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/analysis?error=unauthorized`);
   }
@@ -34,7 +34,7 @@ export async function GET(request: Request) {
     });
 
     const data = await response.json();
-
+    console.log("TOKENS", data, supabase)
     // Store tokens in Supabase
     await supabase
       .from('strava_tokens')

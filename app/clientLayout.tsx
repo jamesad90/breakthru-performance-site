@@ -29,6 +29,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { href: '/about', label: 'About' },
     { href: '/plans', label: 'Plans & Pricing' },
     { href: '/blog', label: 'Blog' },
+    { href: '/dashboard/analysis', label: 'Dashboard' },
   ]
 
   return (

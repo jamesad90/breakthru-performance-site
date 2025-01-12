@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs';
+import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -8,7 +8,7 @@ const supabase = createClient(
 );
 
 export async function GET(request: Request) {
-  const { userId } = auth();
+  const { userId } = await auth();
   const { searchParams } = new URL(request.url);
   const dateRange = searchParams.get('dateRange') || 'week';
   const activityType = searchParams.get('activityType') || 'all';

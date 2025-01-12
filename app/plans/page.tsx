@@ -48,7 +48,7 @@ export default function PlansPage() {
         "Race Day Nutrition Planning + Preparation",
         "Unlimited Coach Contact via WhatsApp",
         "Monthly Data Dive Report"
-      ],
+      ],                           
       icon: <Medal className="w-6 h-6" />,
       popular: true
     },
@@ -183,7 +183,7 @@ export default function PlansPage() {
                     </li>
                   ))}
                 </ul>
-                <Button className="w-full bg-[#8B9FEF] hover:bg-[#8B9FEF]/90">
+                <Button onClick={handlePlanSelect} className="w-full bg-[#8B9FEF] hover:bg-[#8B9FEF]/90">
                   Select Plan
                 </Button>
               </CardContent>
@@ -193,7 +193,7 @@ export default function PlansPage() {
 
         {/* Selection Dialog */}
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
-          <DialogContent>
+          <DialogContent className='max-w-md bg-white dark:bg-gray-800'>
             <DialogHeader>
               <DialogTitle>Choose Your Next Step</DialogTitle>
               <DialogDescription>
