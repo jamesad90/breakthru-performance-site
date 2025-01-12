@@ -4,10 +4,12 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Moon, Sun, Zap } from "lucide-react"
+import { UserButton, SignInButton, useUser } from "@clerk/nextjs"
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [isDarkMode, setIsDarkMode] = useState(false)
   const router = useRouter()
+  const { isSignedIn } = useUser()
 
   useEffect(() => {
     const isDark = localStorage.getItem('darkMode') === 'true'
@@ -55,13 +57,19 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 </Link>
               ))}
             </nav>
-            <div className="flex items-center">
-              <Button variant="ghost" size="icon" onClick={toggleDarkMode} className="mr-2">
+            <div className="flex items-center space-x-4">
+              <Button variant="ghost" size="icon" onClick={toggleDarkMode}>
                 {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
               </Button>
-              <Button className="bg-[#8B9FEF] text-white hover:bg-[#8B9FEF]/90">
-                Get Started
-              </Button>
+              {isSignedIn ? (
+                <UserButton afterSignOutUrl="/" />
+              ) : (
+                <SignInButton mode="modal">
+                  <Button className="bg-[#8B9FEF] text-white hover:bg-[#8B9FEF]/90">
+                    Sign In
+                  </Button>
+                </SignInButton>
+              )}
             </div>
           </div>
         </div>

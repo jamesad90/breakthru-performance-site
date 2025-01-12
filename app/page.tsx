@@ -153,21 +153,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Footer */}
-        <footer className="border-t border-[#FF7F5C]/20 dark:border-[#FF7F5C]/10 py-8">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <div className="mb-4 md:mb-0">
-                <p>&copy; 2024 Breakthru Performance. All rights reserved.</p>
-              </div>
-              <div className="flex space-x-4">
-                <Link href="/privacy" className="text-sm hover:text-[#FF7F5C]">Privacy Policy</Link>
-                <Link href="/terms" className="text-sm hover:text-[#FF7F5C]">Terms of Service</Link>
-                <Link href="/contact" className="text-sm hover:text-[#FF7F5C]">Contact Us</Link>
-              </div>
-            </div>
-          </div>
-        </footer>
+       
       </div>
     </div>
   )
