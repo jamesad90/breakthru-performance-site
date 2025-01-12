@@ -46,30 +46,25 @@ export default function AnalysisPage() {
   const [error, setError] = useState<string | null>(null);
   const [isStravaConnected, setIsStravaConnected] = useState(false);
 
-  useEffect(() => {
-    checkStravaConnection();
-  }, [user]);
-
-  useEffect(() => {
-    if (isStravaConnected) {
-      fetchActivities();
-    }
-  }, [dateRange, activityType, isStravaConnected]);
-
+  
   const checkStravaConnection = async () => {
     if (!user) return;
-
+    console.log('Checking Strava connection', user);
     try {
       const { data, error } = await supabase
         .from('strava_tokens')
         .select('*')
-        .eq('user_id', user.id)
-        .single();
+        .eq('user_id', user.id);
 
+        if (isStravaConnected) {
+          console.log('Fetching activities');
+          fetchActivities();
+        }
       if (error) throw error;
-      setIsStravaConnected(!!data);
+      // Check if we have any tokens at all
+      setIsStravaConnected(true);
     } catch (err) {
-      console.error('Error checking Strava connection:', err);
+      console.log('Error checking Strava connection:', err);
       setIsStravaConnected(false);
     }
   };
@@ -117,6 +112,18 @@ export default function AnalysisPage() {
     }
   };
 
+  useEffect(() => {
+    checkStravaConnection();
+
+  }, [user]);
+
+  useEffect(() => {
+    if (isStravaConnected) {
+      console.log('Fetching activities');
+      fetchActivities();
+    }
+  }, [dateRange, activityType, isStravaConnected]);
+
   const chartData = {
     labels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
     datasets: [{
@@ -141,7 +148,7 @@ export default function AnalysisPage() {
       },
     },
   };
-
+ 
  
   if (!isStravaConnected) {
     return (
@@ -187,6 +194,7 @@ export default function AnalysisPage() {
       </div>
     );
   }
+ 
 
   return (
     <div className="container mx-auto px-4 py-8">

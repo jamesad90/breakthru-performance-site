@@ -19,6 +19,7 @@ export async function GET(request: Request) {
 
   try {
     // Get user's Strava tokens
+    console.log("fetching activities")
     const { data: tokens } = await supabase
       .from('strava_tokens')
       .select('*')
