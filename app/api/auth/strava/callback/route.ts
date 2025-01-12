@@ -7,19 +7,20 @@ const STRAVA_CLIENT_SECRET = process.env.STRAVA_CLIENT_SECRET;
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.SUPABASE_SERVICE_KEY!
 );
 
 export async function GET(request: Request) {
   const { userId } = await auth();
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
-  console.log("CODE", code);
+
   if (!code || !userId) {
     return NextResponse.redirect(`${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/analysis?error=unauthorized`);
   }
 
   try {
+    // Exchange code for tokens
     const response = await fetch('https://www.strava.com/oauth/token', {
       method: 'POST',
       headers: {
@@ -34,9 +35,14 @@ export async function GET(request: Request) {
     });
 
     const data = await response.json();
-    console.log("TOKENS", data, supabase)
+
+    if (!response.ok) {
+      console.error('Strava token exchange error:', data);
+      throw new Error('Failed to exchange token');
+    }
+
     // Store tokens in Supabase
-    await supabase
+    const { error: upsertError } = await supabase
       .from('strava_tokens')
       .upsert({
         user_id: userId,
@@ -47,9 +53,14 @@ export async function GET(request: Request) {
         onConflict: 'user_id'
       });
 
+    if (upsertError) {
+      console.error('Error storing tokens:', upsertError);
+      throw upsertError;
+    }
+
     return NextResponse.redirect(`${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/analysis?success=true`);
   } catch (error) {
-    console.error('Error exchanging Strava code:', error);
+    console.error('Error in Strava callback:', error);
     return NextResponse.redirect(`${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/analysis?error=token_exchange`);
   }
 }
