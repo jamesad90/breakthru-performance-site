@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -63,6 +63,7 @@ export default function SignupPage() {
               <CardTitle>Complete Your Registration</CardTitle>
             </CardHeader>
             <CardContent>
+            <Suspense fallback={<p>Loading...</p>}>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name</Label>
@@ -99,6 +100,7 @@ export default function SignupPage() {
                   </Button>
                 </div>
               </form>
+              </Suspense>
             </CardContent>
           </Card>
         </div>
