@@ -128,8 +128,8 @@ export default function LandingPage() {
             <h2 className="text-3xl font-bold mb-12 text-center text-[#FF7F5C]">What Our Athletes Say</h2>
             <div className="grid md:grid-cols-2 gap-12">
               {[
-                { name: "Sarah L.", sport: "Triathlete", quote: "Breakthru Performance transformed my approach to training. I've seen incredible improvements in my race times and overall endurance." },
-                { name: "Mike R.", sport: "Marathon Runner", quote: "The personalized plans and constant support from the Breakthru team have been instrumental in helping me qualify for Boston." },
+                { name: "David C.", sport: "Triathlete", quote: "Breakthru Performance transformed my approach to training. I've seen incredible improvements in my race times and overall endurance." },
+                { name: "Ben F.", sport: "Marathon Runner", quote: "The personalized plans and constant support from the Breakthru team have been instrumental in helping me qualify for Boston." },
               ].map((testimonial, index) => (
                 <Card key={index} className="dark:bg-gray-800 border-[#FF7F5C]/20">
                   <CardContent className="p-6">

@@ -10,7 +10,8 @@ import { loadStripe } from '@stripe/stripe-js'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
-export default function SignupPage() {
+// Separate component to handle search params
+function SignupForm() {
   const searchParams = useSearchParams()
   const [formData, setFormData] = useState({
     name: '',
@@ -55,6 +56,47 @@ export default function SignupPage() {
   }
 
   return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-2">
+        <Label htmlFor="name">Full Name</Label>
+        <Input
+          id="name"
+          required
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="email">Email</Label>
+        <Input
+          id="email"
+          type="email"
+          required
+          value={formData.email}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="phone">Phone Number</Label>
+        <Input
+          id="phone"
+          type="tel"
+          required
+          value={formData.phone}
+          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+        />
+      </div>
+      <div className="pt-4">
+        <Button type="submit" className="w-full bg-[#8B9FEF] hover:bg-[#8B9FEF]/90">
+          Proceed to Payment
+        </Button>
+      </div>
+    </form>
+  )
+}
+
+export default function SignupPage() {
+  return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-md mx-auto">
@@ -63,43 +105,8 @@ export default function SignupPage() {
               <CardTitle>Complete Your Registration</CardTitle>
             </CardHeader>
             <CardContent>
-            <Suspense fallback={<p>Loading...</p>}>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input
-                    id="name"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    required
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  />
-                </div>
-                <div className="pt-4">
-                  <Button type="submit" className="w-full bg-[#8B9FEF] hover:bg-[#8B9FEF]/90">
-                    Proceed to Payment
-                  </Button>
-                </div>
-              </form>
+              <Suspense fallback={<p>Loading...</p>}>
+                <SignupForm />
               </Suspense>
             </CardContent>
           </Card>
