@@ -1,15 +1,15 @@
 'use client';
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Moon, Sun, Zap } from "lucide-react"
 import { UserButton, SignInButton, useUser } from "@clerk/nextjs"
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [isDarkMode, setIsDarkMode] = useState(false)
-  const router = useRouter()
   const { isSignedIn } = useUser()
+  const pathname = usePathname();
 
   useEffect(() => {
     const isDark = localStorage.getItem('darkMode') === 'true'
@@ -28,7 +28,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { href: '/', label: 'Home' },
     { href: '/about', label: 'About' },
     { href: '/plans', label: 'Plans & Pricing' },
-    { href: '/blog', label: 'Blog' },
+    { href: '/blog', label: 'Blog', disabled: true },
     { href: '/dashboard/analysis', label: 'Dashboard' },
   ]
 
@@ -44,19 +44,23 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <span className="text-xl font-bold text-[#FF7F5C]">Breakthru Performance</span>
             </Link>
             <nav className="hidden md:flex space-x-4">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`text-sm font-medium ${
-                    router.pathname === item.href
-                      ? 'text-[#FF7F5C]'
-                      : 'text-gray-600 dark:text-gray-300 hover:text-[#FF7F5C]'
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              ))}
+              {navItems.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className={`flex items-center px-4 py-2 text-sm ${
+                        isActive
+                          ? 'bg-gray-100 text-gray-900'
+                          : 'text-gray-700 hover:bg-gray-50'
+                      } ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                );
+              })}
             </nav>
             <div className="flex items-center space-x-4">
               <Button variant="ghost" size="icon" onClick={toggleDarkMode}>
