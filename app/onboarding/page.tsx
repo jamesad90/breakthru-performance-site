@@ -7,6 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Check, ChevronRight, Activity, Watch } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
+import { createClient } from '@supabase/supabase-js';
+
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -14,16 +22,18 @@ export default function OnboardingPage() {
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [isStravaConnected, setIsStravaConnected] = useState(false);
   const [isGarminConnected, setIsGarminConnected] = useState(false);
-
+  const { user } = useUser();
   const totalSteps = 3;
   const progress = (step / totalSteps) * 100;
 
   const connectStrava = async () => {
     window.location.href = '/api/auth/strava';
+    checkStravaConnection();
   };
 
   const connectGarmin = async () => {
     window.location.href = '/api/auth/garmin';
+    checkGarminConnection();
   };
 
   const handleNext = () => {
@@ -35,9 +45,43 @@ export default function OnboardingPage() {
   };
 
   const handleComplete = () => {
-    router.push('/dashboard');
+    router.push('/dashboard/analysis');
   };
 
+  const checkStravaConnection = async () => {
+    if (!user) return;
+    console.log('Checking Strava connection', user);
+    try {
+      const { data, error } = await supabase
+        .from('strava_tokens')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      // Check if we have any tokens at all
+      setIsStravaConnected(true);
+    } catch (err) {
+      console.log('Error checking Strava connection:', err);
+      setIsStravaConnected(false);
+    }
+  };
+  const checkGarminConnection = async () => {
+    if (!user) return;
+    console.log('Checking Garmin connection', user);
+    try {
+      const { data, error } = await supabase
+        .from('strava_tokens')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      // Check if we have any tokens at all
+      setIsGarminConnected(true);
+    } catch (err) {
+      console.log('Error checking Garmin connection:', err);
+      setIsGarminConnected(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
       <div className="container mx-auto px-4 py-16">

@@ -29,7 +29,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { href: '/about', label: 'About' },
     { href: '/plans', label: 'Plans & Pricing' },
     { href: '/blog', label: 'Blog', disabled: true },
-    { href: '/dashboard/analysis', label: 'Dashboard' },
+    ...(isSignedIn ? [{ href: '/dashboard/analysis', label: 'Dashboard' }] : []),
   ]
 
   return (
@@ -47,7 +47,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               {navItems.map((item) => {
                 const isActive = pathname === item.href;
                 return (
-                  <li key={item.href}>
                     <Link
                       href={item.href}
                       className={`flex items-center px-4 py-2 text-sm ${
@@ -58,7 +57,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     >
                       {item.label}
                     </Link>
-                  </li>
                 );
               })}
             </nav>
