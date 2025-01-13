@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Moon, Sun, Zap } from "lucide-react"
 import { UserButton, SignInButton, useUser } from "@clerk/nextjs"
+import CenteredSVG from '@/public/images/logo/bolt_icon';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [isDarkMode, setIsDarkMode] = useState(false)
@@ -28,8 +29,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { href: '/', label: 'Home' },
     { href: '/about', label: 'About' },
     { href: '/plans', label: 'Plans & Pricing' },
+    { href: '/performance-testing', label: 'Lab Tests' },
     { href: '/blog', label: 'Blog', disabled: true },
-    { href: '/dashboard/analysis', label: 'Dashboard' },
+    ...(isSignedIn ? [{ href: '/dashboard/analysis', label: 'Dashboard' }] : []),
   ]
 
   return (
@@ -39,7 +41,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center space-x-2">
               <div className="w-10 h-10 bg-[#FF7F5C] rounded-full flex items-center justify-center">
-                <Zap className="h-6 w-6 text-white" />
+                <CenteredSVG />
               </div>
               <span className="text-xl font-bold text-[#FF7F5C]">Breakthru Performance</span>
             </Link>
@@ -47,8 +49,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               {navItems.map((item) => {
                 const isActive = pathname === item.href;
                 return (
-                  <li key={item.href}>
                     <Link
+                      key={item.href}
                       href={item.href}
                       className={`flex items-center px-4 py-2 text-sm ${
                         isActive
@@ -58,7 +60,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     >
                       {item.label}
                     </Link>
-                  </li>
                 );
               })}
             </nav>

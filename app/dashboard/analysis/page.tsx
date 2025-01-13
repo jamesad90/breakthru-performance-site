@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Line } from 'react-chartjs-2';
-import { Activity, Calendar, TrendingUp, Timer, Heart } from 'lucide-react';
+import { Activity, TrendingUp, Timer, Heart } from 'lucide-react';
 import { useUser } from "@clerk/nextjs";
 import { createClient } from '@supabase/supabase-js';
 import {
@@ -150,7 +150,7 @@ export default function AnalysisPage() {
   };
  
  
-  if (!isStravaConnected) {
+  if (!isStravaConnected && !isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card>

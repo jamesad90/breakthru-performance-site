@@ -5,7 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Moon, PackageX, Sun, Zap } from "lucide-react"
+import { Moon, Sun } from "lucide-react"
 
 export default function LandingPage() {
   const [isDarkMode, setIsDarkMode] = useState(false)
@@ -26,7 +26,7 @@ export default function LandingPage() {
   return (
     <div className={`min-h-screen ${isDarkMode ? 'dark' : ''}`}>
       <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300">
-        {/* Navigation */}
+        {/* Navigation
         <nav className="border-b border-[#FF7F5C]/20 dark:border-[#FF7F5C]/10">
           <div className="container mx-auto px-4">
             <div className="flex h-16 items-center justify-between">
@@ -49,7 +49,7 @@ export default function LandingPage() {
               </Button>
             </div>
           </div>
-        </nav>
+        </nav> */}
 
         {/* Hero Section */}
         <section className="bg-[#FF7F5C] dark:bg-[#FF7F5C]/90 py-20 text-white">
@@ -128,8 +128,8 @@ export default function LandingPage() {
             <h2 className="text-3xl font-bold mb-12 text-center text-[#FF7F5C]">What Our Athletes Say</h2>
             <div className="grid md:grid-cols-2 gap-12">
               {[
-                { name: "Sarah L.", sport: "Triathlete", quote: "Breakthru Performance transformed my approach to training. I've seen incredible improvements in my race times and overall endurance." },
-                { name: "Mike R.", sport: "Marathon Runner", quote: "The personalized plans and constant support from the Breakthru team have been instrumental in helping me qualify for Boston." },
+                { name: "David C.", sport: "Triathlete", quote: "Breakthru Performance transformed my approach to training. I've seen incredible improvements in my race times and overall endurance." },
+                { name: "Ben F.", sport: "Marathon Runner", quote: "The personalized plans and constant support from the Breakthru team have been instrumental in helping me qualify for Boston." },
               ].map((testimonial, index) => (
                 <Card key={index} className="dark:bg-gray-800 border-[#FF7F5C]/20">
                   <CardContent className="p-6">
@@ -148,7 +148,7 @@ export default function LandingPage() {
             <h2 className="text-3xl font-bold mb-4">Ready to Break Through?</h2>
             <p className="mb-8 text-xl">Join us and start rewriting your personal bests today.</p>
             <Button className="bg-[#8B9FEF] text-white hover:bg-[#8B9FEF]/90">
-              Get Started Now
+              <Link href="/signup">Get Started Now</Link>
             </Button>
           </div>
         </section>

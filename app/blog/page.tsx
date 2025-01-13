@@ -59,10 +59,10 @@ export default function BlogPage() {
     }
   };
 
-  const filteredPosts = posts.filter(post =>
+  const filteredPosts = posts.filter((post: { title: string; excerpt: string; tags?: string[] }) =>
     post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     post.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    post.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+    post.tags?.some((tag: string) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   if (loading) {
